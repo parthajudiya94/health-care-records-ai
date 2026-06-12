@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0c1410;
+  --ink-muted: #3d4a44;
+  --paper: #f4f0e8;
+  --paper-elevated: #fffdfa;
+  --tint: #0f3d35;
+  --tint-bright: #1a5c4c;
+  --sage: #6b8f7a;
+  --border: #d2cec4;
+  --error: #9b2c2c;
+  --ok: #1a4d1a;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-paper: var(--paper);
+  --color-paper-elevated: var(--paper-elevated);
+  --color-tint: var(--tint);
+  --color-tint-bright: var(--tint-bright);
+  --color-sage: var(--sage);
+  --color-border: var(--border);
+  --color-error: var(--error);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), ui-serif, serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: radial-gradient(120% 100% at 0% 0%, #e8f0e8 0, var(--paper) 55%);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--tint-bright);
+  outline-offset: 2px;
+}

@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  ADMIN
+}
+
+enum ReminderType {
+  APPOINTMENT
+  MEDICATION
+  TEST
+  OTHER
+}
+
+enum ReminderRecurring {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum SummaryStatus {
+  NOT_REQUESTED
+  PROCESSING
+  READY
+  ERROR
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(PATIENT)
+  createdAt     DateTime @default(now())
+
+  sessions      Session[]
+  records       Record[]
+  recordFiles   RecordFile[]
+  reminders     Reminder[]
+  notifications Notification[]
+  chatSessions  ChatSession[]
+  auditLogs     AuditLog[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Record {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  note      String?
+  createdAt DateTime @default(now())
+
+  files     RecordFile[]
+
+  @@index([userId, createdAt])
+}
+
+model RecordFile {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recordId      String
+  record        Record        @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  fileName      String
+  filePath      String
+  mimeType      String
+  createdAt     DateTime      @default(now())
+
+  summary       Json?
+  summaryStatus SummaryStatus @default(NOT_REQUESTED)
+  summaryError  String?
+  summarizedAt  DateTime?
+
+  reportType    String?
+  riskLevel     RiskLevel?
+
+  @@index([userId, createdAt])
+  @@index([recordId, createdAt])
+}
+
+model Reminder {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  datetime  DateTime
+  type      ReminderType
+  recurring ReminderRecurring @default(NONE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId, datetime])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  title     String
+  metadata  Json?
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       String
+  resourceType String?
+  resourceId   String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([resourceType, resourceId])
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  messages  ChatMessage[]
+
+  @@index([userId, createdAt])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String      @db.Text
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+}
